@@ -517,12 +517,11 @@ $(function() {
 
   /* selecting */
 
-  var generateTempCanvas = function(coords) {
+  var generateTempCanvas = function(coords, parent) {
     
     // temporary canvas to save image
-    DOM.$body.append('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');
-    var tempCanvas = $('#' + classes.saveSelectionCanvas);    
-
+    var tempCanvas = $('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');    
+    parent.append(tempCanvas);
     // set dimensions and draw based on selection
     var width = Math.abs(coords.endX - coords.startX);
     var height = Math.abs(coords.endY - coords.startY);
@@ -542,6 +541,23 @@ $(function() {
     antsCanvas.height(e.pageY - rect.startY);
   }
 
+  var generateSelection = function(e) {
+    var ants = $('<div class="outerAnts"><div class="innerAnts"></div></div>');
+    antsCanvas.remove();
+    saveSelection.endX = e.pageX;
+    saveSelection.endY = e.pageY;
+    var img = ctx.getImageData(saveSelection.startX, saveSelection.startY, antsCanvas.width(), antsCanvas.height());
+    var tempCanvas = generateTempCanvas(saveSelection, ants);
+    var tempCtx = tempCanvas[0].getContext('2d');
+    tempCtx.putImageData(img, 0, 0);
+    ants.css({
+      "left": saveSelection.startX,
+      "top": saveSelection.startY
+    });
+    ants.find('.innerAnts').append(tempCanvas);
+    DOM.$body.append(ants);
+  }
+
   /* saving */
   
   var startSaveSelection = function(e) {
@@ -559,7 +575,7 @@ $(function() {
     var startX = Math.min( saveSelection.startX, saveSelection.endX );
     var startY = Math.min( saveSelection.startY, saveSelection.endY );
 
-    var tempCanvas = generateTempCanvas(saveSelection);
+    var tempCanvas = generateTempCanvas(saveSelection, DOM.$body);
 
     if (tempCanvas) {      
       var tempCtx = tempCanvas[0].getContext('2d');
@@ -821,6 +837,7 @@ $(function() {
     }
     if ( mode.select ) {
       DOM.$body.off('mousemove');
+      generateSelection(e);
     }
     else {
       DOM.$overlay.off('mousemove');

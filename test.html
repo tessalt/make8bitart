@@ -33,9 +33,31 @@
   <style>
 #antsCanvas {
   position: absolute;
-  border: 2px solid black;
+  border: 1px dashed black;
   pointer-events: none;
 }
+
+
+@-webkit-keyframes animatedBackground {
+  from { background-position: 0 0; }
+  to { background-position: -8px 0; }
+}
+
+.outerAnts {
+  position: absolute;
+  overflow: hidden;
+  margin-left: -1px;
+  margin-top: -1px;
+}
+
+.innerAnts {
+  background: url(https://s3.amazonaws.com/f.cl.ly/items/3q3O2Q3Q0A1G1M1T0y0P/ants.gif);
+  width: 100%;
+  height: 100%;
+  padding: 1px;
+  -webkit-animation: animatedBackground 1s linear infinite;
+}
+
   </style>
   <link rel="icon" href="assets/favicon.png" />
 </head>
