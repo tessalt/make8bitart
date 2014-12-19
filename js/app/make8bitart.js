@@ -8,13 +8,14 @@ $(function() {
 
   /*** VARIABULLS ***/
 
-  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, saveSelection, rect, historyPointer;
+  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, saveSelection, rect, historyPointer, antsCanvas;
   var undoRedoHistory = [];
   var drawHistory = [];
 
   var classes = {
     selectionCanvas: 'selectionCanvas',
     saveSelectionCanvas : 'saveSelectionCanvas',
+    antsCanvas: 'antsCanvas',
     current: 'current',
     currentTool: 'current-tool',
     dropperMode: 'dropper-mode',
@@ -53,6 +54,7 @@ $(function() {
     $paint : $('#paint'),
 
     $buttonNewCanvas : $('#new-canvas'),
+    $buttonSelct : $('#select'),
     $buttonSaveFull : $('#save-full'),
     $buttonSaveSelection : $('#save-selection'),
     $buttonSaveImgur : $('#save-imgur'),
@@ -85,6 +87,8 @@ $(function() {
     drawing : false,
     save : false,
     paint : false,
+    select: false,
+    selecting: false,
     trill : true
   };
   
@@ -511,7 +515,33 @@ $(function() {
     return bgCanvas.toDataURL();
   };
 
+  /* selecting */
+
+  var generateTempCanvas = function(coords) {
+    
+    // temporary canvas to save image
+    DOM.$body.append('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');
+    var tempCanvas = $('#' + classes.saveSelectionCanvas);    
+
+    // set dimensions and draw based on selection
+    var width = Math.abs(coords.endX - coords.startX);
+    var height = Math.abs(coords.endY - coords.startY);
+    tempCanvas[0].width = width;
+    tempCanvas[0].height = height;
+
+    if ( width && height ) {
+      return tempCanvas;
+    }
+    
+    // remove tempCanvas
+    tempCanvas.remove();
+  };
   
+  var drawSelection = function(e) {
+    antsCanvas.width(e.pageX - rect.startX);
+    antsCanvas.height(e.pageY - rect.startY);
+  }
+
   /* saving */
   
   var startSaveSelection = function(e) {
@@ -542,28 +572,7 @@ $(function() {
     DOM.$buttonSaveSelection.click();
   };
 
-  
-  var generateTempCanvas = function(coords, cb) {
-    
-    // temporary canvas to save image
-    DOM.$body.append('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');
-    var tempCanvas = $('#' + classes.saveSelectionCanvas);    
-
-    // set dimensions and draw based on selection
-    var width = Math.abs(coords.endX - coords.startX);
-    var height = Math.abs(coords.endY - coords.startY);
-    tempCanvas[0].width = width;
-    tempCanvas[0].height = height;
-
-    if ( width && height ) {
-      return tempCanvas;
-    }
-    
-    // remove tempCanvas
-    tempCanvas.remove();
-  };
-
-  var drawSelection = function(e) {
+  var drawSaveSelection = function(e) {
     rect.w = (e.pageX - this.offsetLeft) - rect.startX;
     rect.h = (e.pageY - this.offsetTop) - rect.startY ;
     ctxOverlay.clearRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
@@ -742,7 +751,7 @@ $(function() {
       DOM.$canvas.removeClass(classes.dropperMode);
       DOM.$dropper.removeClass(classes.currentTool).removeAttr('style');
     }
-    else if ( !mode.save ) {
+    else if ( !mode.save && !mode.select ) {
     
       // reset history
       undoRedoHistory = undoRedoHistory.slice(0, historyPointer+1);
@@ -774,17 +783,30 @@ $(function() {
         }
       }
       
-    }
+    }    
     else {
+      // save mode
       // overlay stuff
       rect = {};
       startSaveSelection(e);
       rect.startX = e.pageX - this.offsetLeft;
       rect.startY = e.pageY - this.offsetTop;
-      DOM.$overlay.on('mousemove', drawSelection);
-      
-      // touch
-      DOM.$overlay[0].addEventListener('touchmove', drawSelection, false);
+      if ( mode.save ) {
+        DOM.$overlay.on('mousemove', drawSaveSelection);
+        
+        // touch
+        DOM.$overlay[0].addEventListener('touchmove', drawSaveSelection, false);        
+      } 
+      if ( mode.select ) {        
+        DOM.$body.append('<div id="' + classes.antsCanvas + '"></div>');
+        antsCanvas = $('#' + classes.antsCanvas);
+        antsCanvas.css({
+          "left": rect.startX,
+          "top": rect.startY
+        }).width(0).height(0);
+        DOM.$body.on('mousemove', drawSelection);
+      }
+
     }
     
   };
@@ -796,6 +818,9 @@ $(function() {
       
       // save
       saveToLocalStorage();
+    }
+    if ( mode.select ) {
+      DOM.$body.off('mousemove');
     }
     else {
       DOM.$overlay.off('mousemove');
@@ -868,6 +893,10 @@ $(function() {
       ctxOverlay.fillRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
       DOM.$overlay.show();
     }
+  });
+
+  DOM.$buttonSelct.click(function() {
+    mode.select = true;
   });
 
   // ensure elements are enabled before triggering a click event
