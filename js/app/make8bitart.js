@@ -13,7 +13,8 @@ $(function() {
   var drawHistory = [];
 
   var classes = {
-    selectionCanvas : 'selectionCanvas',
+    selectionCanvas: 'selectionCanvas',
+    saveSelectionCanvas : 'saveSelectionCanvas',
     current: 'current',
     currentTool: 'current-tool',
     dropperMode: 'dropper-mode',
@@ -525,16 +526,28 @@ $(function() {
     saveSelection.endX = e.pageX;
     saveSelection.endY = e.pageY;
 
-    generateSelectionCanvas(saveSelection);
+    var startX = Math.min( saveSelection.startX, saveSelection.endX );
+    var startY = Math.min( saveSelection.startY, saveSelection.endY );
+
+    var tempCanvas = generateTempCanvas(saveSelection);
+
+    if (tempCanvas) {      
+      var tempCtx = tempCanvas[0].getContext('2d');
+      tempCtx.drawImage(DOM.$canvas[0],startX, startY, tempCanvas[0].width, tempCanvas[0].height, 0, 0, tempCanvas[0].width, tempCanvas[0].height);    
+      var img = tempCanvas[0].toDataURL('image/png');
+      displayFinishedArt(img);
+      tempCanvas.remove();
+    }
+
     DOM.$buttonSaveSelection.click();
   };
+
   
-  var generateSelectionCanvas = function(coords) {
+  var generateTempCanvas = function(coords, cb) {
     
     // temporary canvas to save image
-    DOM.$body.append('<canvas id="' + classes.selectionCanvas + '"></canvas>');
-    var tempCanvas = $('#' + classes.selectionCanvas);
-    var tempCtx = tempCanvas[0].getContext('2d');
+    DOM.$body.append('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');
+    var tempCanvas = $('#' + classes.saveSelectionCanvas);    
 
     // set dimensions and draw based on selection
     var width = Math.abs(coords.endX - coords.startX);
@@ -542,15 +555,8 @@ $(function() {
     tempCanvas[0].width = width;
     tempCanvas[0].height = height;
 
-    var startX = Math.min( coords.startX, coords.endX );
-    var startY = Math.min( coords.startY, coords.endY );
-
     if ( width && height ) {
-      tempCtx.drawImage(DOM.$canvas[0],startX, startY, width, height, 0, 0, width, height);
-    
-      // write on screen
-      var img = tempCanvas[0].toDataURL('image/png');
-      displayFinishedArt(img);
+      return tempCanvas;
     }
     
     // remove tempCanvas
