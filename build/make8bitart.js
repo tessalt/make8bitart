@@ -490,12 +490,13 @@ $(function() {
 
   /*** VARIABULLS ***/
 
-  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, saveSelection, rect, historyPointer;
+  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, selectionRect, rect, historyPointer, selectContent;
   var undoRedoHistory = [];
   var drawHistory = [];
 
   var classes = {
-    selectionCanvas : 'selectionCanvas',
+    saveSelectionCanvas : 'saveSelectionCanvas',
+    dragSelectBox: 'dragSelectBox',
     current: 'current',
     currentTool: 'current-tool',
     dropperMode: 'dropper-mode',
@@ -547,6 +548,8 @@ $(function() {
     $tips : $('.tip'),
     $saveInstruction : $('.instructions').slideUp(),
     
+    $select: $('.selectButton'),
+
     $undo : $('#undo'),
     $redo : $('#redo'),
     
@@ -571,7 +574,11 @@ $(function() {
     drawing : false,
     save : false,
     paint : false,
-    trill : true
+    trill : true,
+    select: false,
+    selected: false,
+    copy: false,
+    move: false
   };
   
   var action = {
@@ -997,6 +1004,67 @@ $(function() {
     return bgCanvas.toDataURL();
   };
 
+  /* selecting */
+
+  var generateSelection = function(e) {
+    selectionRect.endX = roundToNearestPixel(e.pageX);
+    selectionRect.endY = roundToNearestPixel(e.pageY);
+  };
+
+  var generateSelectionCanvas = function(e) {
+    DOM.$overlay.hide();
+    generateSelection(e);
+
+    mode.select = false;
+    mode.selected = true;
+
+    DOM.$body.append('<div id="' + classes.dragSelectBox + '"><div><canvas></canvas></div></div>');
+    DOM.$selectBox = $('#' + classes.dragSelectBox);
+    DOM.$selectCanvas = DOM.$selectBox.find('canvas');
+    selectCtx = DOM.$selectCanvas[0].getContext('2d');
+
+    selectionRect.w = Math.abs(selectionRect.endX - selectionRect.startX);
+    selectionRect.h = Math.abs(selectionRect.endY - selectionRect.startY);
+
+    DOM.$selectCanvas[0].width = selectionRect.w;
+    DOM.$selectCanvas[0].height = selectionRect.h;
+
+    DOM.$selectBox.css({
+      left: selectionRect.startX,
+      top: selectionRect.startY
+    });
+
+    selectContent = ctx.getImageData(selectionRect.startX, selectionRect.startY, selectionRect.w, selectionRect.h);
+    selectCtx.putImageData(selectContent, 0, 0);
+
+    if ( mode.move ) {
+      ctx.clearRect(selectionRect.startX, selectionRect.startY, selectionRect.w, selectionRect.h);
+    }
+
+    DOM.$body.on('mousemove', moveSelectionCanvas);
+
+    DOM.$selectBox.on('mousedown', dropSelection);
+
+  };
+
+  var moveSelectionCanvas = function(e) {
+    DOM.$selectBox.css({
+      left: e.pageX - selectionRect.w,
+      top: e.pageY - selectionRect.h
+    });
+  };
+
+  var dropSelection = function(e) {
+    DOM.$body.off('mousemove');
+
+    mode.selected = false;
+    mode.copy = false;
+    mode.move = false;
+    DOM.$selectBox.detach();
+    
+    ctx.putImageData(selectContent, roundToNearestPixel(e.pageX - selectionRect.w), roundToNearestPixel(e.pageY - selectionRect.h));
+
+  };
   
   /* saving */
 
@@ -1005,8 +1073,8 @@ $(function() {
     return canRound ? Math.round(n / pixel.size) * pixel.size : n;
   };
 
-  var startSaveSelection = function(e) {
-    saveSelection = {
+  var startSelection = function(e) {
+    selectionRect = {
       startX : roundToNearestPixel(e.pageX),
       startY : roundToNearestPixel(e.pageY)
     };
@@ -1014,18 +1082,17 @@ $(function() {
   
   var generateSaveSelection = function(e) {
 
-    saveSelection.endX = roundToNearestPixel(e.pageX);
-    saveSelection.endY = roundToNearestPixel(e.pageY);
+    generateSelection(e);
 
-    generateSelectionCanvas(saveSelection);
+    generateSaveSelectionCanvas(selectionRect);
     DOM.$buttonSaveSelection.click();
   };
   
-  var generateSelectionCanvas = function(coords) {
+  var generateSaveSelectionCanvas = function(coords) {
     
     // temporary canvas to save image
-    DOM.$body.append('<canvas id="' + classes.selectionCanvas + '"></canvas>');
-    var tempCanvas = $('#' + classes.selectionCanvas);
+    DOM.$body.append('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');
+    var tempCanvas = $('#' + classes.saveSelectionCanvas);
     var tempCtx = tempCanvas[0].getContext('2d');
 
     // set dimensions and draw based on selection
@@ -1049,7 +1116,7 @@ $(function() {
     tempCanvas.remove();
   };
 
-  var drawSelection = function(e) {
+  var drawSaveSelection = function(e) {
     rect.w = roundToNearestPixel((e.pageX - this.offsetLeft) - rect.startX);
     rect.h = roundToNearestPixel((e.pageY - this.offsetTop) - rect.startY);
     ctxOverlay.clearRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
@@ -1228,7 +1295,7 @@ $(function() {
       DOM.$canvas.removeClass(classes.dropperMode);
       DOM.$dropper.removeClass(classes.currentTool).removeAttr('style');
     }
-    else if ( !mode.save ) {
+    else if ( !mode.save && !mode.select ) {
     
       // reset history
       undoRedoHistory = undoRedoHistory.slice(0, historyPointer+1);
@@ -1237,8 +1304,14 @@ $(function() {
       if ( mode.paint && !areColorsEqual( origRGB, pixel.color ) ) {
         action.index++;
         paint( e.pageX, e.pageY, pixel.color, origRGB );
-      }
+      }   
+
       else {
+
+        if ( mode.selected ) {
+          mode.selected = false;
+          DOM.$selectBox.detach();
+        }
         // draw mode
         mode.drawing = true;
       
@@ -1264,19 +1337,21 @@ $(function() {
     else {
       // overlay stuff
       rect = {};
-      startSaveSelection(e);
-      rect.startX = roundToNearestPixel(e.pageX - this.offsetLeft);
+      startSelection(e);
+      rect.startX = roundToNearestPixel(e.pageX - this.offsetLeft); 
       rect.startY = roundToNearestPixel(e.pageY - this.offsetTop);
-      DOM.$overlay.on('mousemove', drawSelection);
+
+      DOM.$overlay.on('mousemove', drawSaveSelection);
       
       // touch
-      DOM.$overlay[0].addEventListener('touchmove', drawSelection, false);
+      DOM.$overlay[0].addEventListener('touchmove', drawSaveSelection, false);
+
     }
     
   };
   
   var onMouseUp = function(e) {
-    if ( !mode.save ) {
+    if ( !mode.save && !mode.select ) {
       DOM.$canvas.off('mousemove');
       mode.drawing = false;
       
@@ -1286,8 +1361,14 @@ $(function() {
     else {
       DOM.$overlay.off('mousemove');
       ctxOverlay.clearRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
-      generateSaveSelection(e);
-      mode.save = false;
+      if ( mode.save ) {
+        generateSaveSelection(e);
+        mode.save = false;
+      }
+      if ( mode.select ) {
+        generateSelectionCanvas(e);
+        mode.select = false;
+      }
       rect = {};
     }
   };
@@ -1353,6 +1434,20 @@ $(function() {
       $(this).val(copy.selectionOff);
       ctxOverlay.fillRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
       DOM.$overlay.show();
+    }
+  });
+
+  // select section of canvas 
+  DOM.$select.click(function(e) {
+    mode.select = !mode.select;
+    var id = $(this).attr('id');
+    if ( mode.select ) {
+      mode[id] = true;
+      ctxOverlay.fillRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
+      DOM.$overlay.show();      
+    } else {
+      ctxOverlay.clearRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
+      DOM.$overlay.hide();
     }
   });
 

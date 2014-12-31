@@ -537,9 +537,9 @@ $(function() {
     mode.selected = true;
 
     DOM.$body.append('<div id="' + classes.dragSelectBox + '"><div><canvas></canvas></div></div>');
-    DOM.$selectBox = $('#' + classes.dragSelectBox),
-    DOM.$selectCanvas = DOM.$selectBox.find('canvas'),
-        selectCtx = DOM.$selectCanvas[0].getContext('2d');
+    DOM.$selectBox = $('#' + classes.dragSelectBox);
+    DOM.$selectCanvas = DOM.$selectBox.find('canvas');
+    selectCtx = DOM.$selectCanvas[0].getContext('2d');
 
     selectionRect.w = Math.abs(selectionRect.endX - selectionRect.startX);
     selectionRect.h = Math.abs(selectionRect.endY - selectionRect.startY);

@@ -516,3 +516,23 @@ html[xmlns] .clearfix {
 * html .clearfix {
   height: 1%;
 }
+
+@-webkit-keyframes animatedBackground {
+  from { background-position: 0 0; }
+  to { background-position: -8px 0; }
+}
+
+#dragSelectBox {
+  position: absolute;
+  overflow: hidden;
+  margin-top: -1px;
+  margin-left: -1px;
+}
+
+#dragSelectBox div {
+  background: url(https://s3.amazonaws.com/f.cl.ly/items/3q3O2Q3Q0A1G1M1T0y0P/ants.gif);
+  width: 100%;
+  height: 100%;
+  padding: 1px;
+  -webkit-animation: animatedBackground 1s linear infinite;
+}
