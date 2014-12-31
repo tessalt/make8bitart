@@ -533,8 +533,9 @@ $(function() {
     mode.select = false;
     mode.selected = true;
 
-    DOM.$body.append('<canvas id="' + classes.dragSelectBox + '"></canvas>');
-    DOM.$selectCanvas = $('#' + classes.dragSelectBox),
+    DOM.$body.append('<div id="' + classes.dragSelectBox + '"><div><canvas></canvas></div></div>');
+    DOM.$selectBox = $('#' + classes.dragSelectBox),
+    DOM.$selectCanvas = DOM.$selectBox.find('canvas'),
         selectCtx = DOM.$selectCanvas[0].getContext('2d');
 
     selectionRect.w = Math.abs(coords.endX - coords.startX);
@@ -543,7 +544,7 @@ $(function() {
     DOM.$selectCanvas[0].width = selectionRect.w;
     DOM.$selectCanvas[0].height = selectionRect.h;
 
-    DOM.$selectCanvas.css({
+    DOM.$selectBox.css({
       left: coords.startX,
       top: coords.startY
     });
@@ -551,14 +552,10 @@ $(function() {
     selectContent = ctx.getImageData(coords.startX, coords.startY, selectionRect.w, selectionRect.h);
     selectCtx.putImageData(selectContent, 0, 0);
 
-    DOM.$body.on('mousemove', moveSelectionCanvas);
-
-    DOM.$selectCanvas.on('mousedown', dropSelection);
-
   };
 
   var moveSelectionCanvas = function(e) {
-    DOM.$selectCanvas.css({
+    DOM.$selectBox.css({
       left: e.pageX - selectionRect.w,
       top: e.pageY - selectionRect.h
     });
@@ -567,7 +564,7 @@ $(function() {
   var dropSelection = function(e) {
     DOM.$body.off('mousemove');
     mode.selected = false;
-    DOM.$selectCanvas.detach();
+    DOM.$selectBox.detach();
     
     ctx.putImageData(selectContent, e.pageX - selectionRect.w, e.pageY - selectionRect.h);
 
