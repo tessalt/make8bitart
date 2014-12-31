@@ -51,6 +51,9 @@
     padding: 1px;
     -webkit-animation: animatedBackground 1s linear infinite;
   }
+  #downloadLink {
+    display: none;
+  }
   </style>
 </head>
 
@@ -157,10 +160,11 @@
         <img class="current-tool" id="pencil" src="assets/pencil.png" alt="draw"  data-href="#draw" role="button" title="draw" />
         <img id="paint" src="assets/paint.png" alt="paint"  data-href="#paint" role="button" title="paint/fill" />
       </div>
-      
       <p>
         <input type="submit" id="move" class="selectButton" title="move" value="move"/>
         <input type="submit" id="copy" class="selectButton" title="copy" value="copy"/>
+      </p>
+      <p>
         <input type="submit" id="undo" title="ctrl+z" value="undo" disabled="disabled" />
         <input type="submit" id="redo" title="ctrl+y" value="redo" disabled="disabled" />
       </p>
@@ -215,6 +219,15 @@
       <ul class="instructions">
         <li>click and drag to select the area of the canvas you want to save.</li>    
       </ul>
+      <hr>
+      <p>
+      <input type="submit" value="export" id="export">
+
+      <a download id="downloadLink">Download</a>
+      </p>
+
+      <p>Upload saved work</p>
+      <input type="file" name="upload-img" id="importImg" /> 
     </div>
     
   </div>

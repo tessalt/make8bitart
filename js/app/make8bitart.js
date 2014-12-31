@@ -68,6 +68,10 @@ $(function() {
     
     $select: $('.selectButton'),
 
+    $exportImg: $('#export'),
+    $importImg: $('#importImg'),
+    $downloadLink: $('#downloadLink'),
+
     $undo : $('#undo'),
     $redo : $('#redo'),
     
@@ -683,7 +687,36 @@ $(function() {
     });
   };
   
+  /* exporting/importing */
+
+  var exportImg = function() {
+    var date = new Date();
+    var fileName = 'make8bitart' + date.toString().split(' ').join('-') + '.txt';
+    var imgData = DOM.$canvas[0].toDataURL('image/png');
+    var textFile = createTxtFile(imgData);
+    DOM.$downloadLink.show().attr('download', fileName);
+    DOM.$downloadLink[0].href = textFile;
+  };
+
+  var importImg = function(file) {
+    console.log(file);
+    var img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img,0,0);
+    };
+    img.src = file;
+    console.log(img);
+  };
   
+  var createTxtFile = function(text) {
+    var blob = new Blob([text], {type: 'text/plain'});
+    if (textFile) {
+      window.URL.revokeObjectURL(textFile);
+    }
+    var textFile = window.URL.createObjectURL(blob);
+    return textFile;
+  };
+
   /* colors */
   
   var getRGBColor = function(imageData) {
@@ -1140,6 +1173,9 @@ $(function() {
     uploadToImgur();
   });
 
+  DOM.$exportImg.click(function() {
+    exportImg();
+  });
   
   /* misc */
 
@@ -1273,7 +1309,21 @@ $(function() {
     }
   });
   
-  
+  DOM.$importImg.on('change', function(e){
+    var file = $(this).prop('files')[0];
+
+    if ( window.FileReader ) {
+      fileReader = new FileReader();
+      fileReader.readAsText(file);
+      fileReader.onload = function() {
+        importImg(fileReader.result);;
+      }
+      fileReader.onerror = function() { alert('Unable to read file. Try again.'); };
+    }
+    else {
+      alert('Your browser doesn\'t support FileReader, which is required for uploading custom palettes.');
+    }
+  });
   
   /*** INIT HA HA HA ***/
   DOM.$pickers.hide();
