@@ -8,7 +8,7 @@ $(function() {
 
   /*** VARIABULLS ***/
 
-  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, selectionRect, rect, historyPointer;
+  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, selectionRect, rect, historyPointer, selectContent;
   var undoRedoHistory = [];
   var drawHistory = [];
 
@@ -93,7 +93,8 @@ $(function() {
     save : false,
     paint : false,
     trill : true,
-    select: false
+    select: false,
+    selected: false
   };
   
   var action = {
@@ -528,23 +529,47 @@ $(function() {
   };
 
   var generateSelectionCanvas = function(coords) {
+
+    mode.select = false;
+    mode.selected = true;
+
     DOM.$body.append('<canvas id="' + classes.dragSelectBox + '"></canvas>');
-    var selectCanvas = $('#' + classes.dragSelectBox),
-        selectCtx = selectCanvas[0].getContext('2d');
+    DOM.$selectCanvas = $('#' + classes.dragSelectBox),
+        selectCtx = DOM.$selectCanvas[0].getContext('2d');
 
-    var w = Math.abs(coords.endX - coords.startX);
-    var h = Math.abs(coords.endY - coords.startY);
+    selectionRect.w = Math.abs(coords.endX - coords.startX);
+    selectionRect.h = Math.abs(coords.endY - coords.startY);
 
-    selectCanvas[0].width = w;
-    selectCanvas[0].height = h;
+    DOM.$selectCanvas[0].width = selectionRect.w;
+    DOM.$selectCanvas[0].height = selectionRect.h;
 
-    selectCanvas.css({
+    DOM.$selectCanvas.css({
       left: coords.startX,
       top: coords.startY
     });
 
-    var selectContent = ctx.getImageData(coords.startX, coords.startY, w, h);
+    selectContent = ctx.getImageData(coords.startX, coords.startY, selectionRect.w, selectionRect.h);
     selectCtx.putImageData(selectContent, 0, 0);
+
+    DOM.$body.on('mousemove', moveSelectionCanvas);
+
+    DOM.$selectCanvas.on('mousedown', dropSelection);
+
+  };
+
+  var moveSelectionCanvas = function(e) {
+    DOM.$selectCanvas.css({
+      left: e.pageX - selectionRect.w,
+      top: e.pageY - selectionRect.h
+    });
+  };
+
+  var dropSelection = function(e) {
+    DOM.$body.off('mousemove');
+    mode.selected = false;
+    DOM.$selectCanvas.detach();
+    
+    ctx.putImageData(selectContent, e.pageX - selectionRect.w, e.pageY - selectionRect.h);
 
   };
   
@@ -767,6 +792,8 @@ $(function() {
   
   var onMouseDown = function(e) {
     e.preventDefault();
+
+    console.log(mode);
             
     var origData = ctx.getImageData( e.pageX, e.pageY, 1, 1).data;
     var origRGB = getRGBColor(origData);
@@ -786,9 +813,10 @@ $(function() {
       if ( mode.paint && !areColorsEqual( origRGB, pixel.color ) ) {
         action.index++;
         paint( e.pageX, e.pageY, pixel.color, origRGB );
-      }
+      }   
+
       else {
-        
+        console.log('draw mode');
         // draw mode
         mode.drawing = true;
       
