@@ -8,12 +8,13 @@ $(function() {
 
   /*** VARIABULLS ***/
 
-  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, saveSelection, rect, historyPointer;
+  var ctx, pickerPaletteCtx, leftSide, topSide, xPos, yPos, resetSelectStart, selectionRect, rect, historyPointer;
   var undoRedoHistory = [];
   var drawHistory = [];
 
   var classes = {
-    selectionCanvas : 'selectionCanvas',
+    saveSelectionCanvas : 'saveSelectionCanvas',
+    dragSelectBox: 'dragSelectBox',
     current: 'current',
     currentTool: 'current-tool',
     dropperMode: 'dropper-mode',
@@ -65,6 +66,8 @@ $(function() {
     $tips : $('.tip'),
     $saveInstruction : $('.instructions').slideUp(),
     
+    $select: $('#select'),
+
     $undo : $('#undo'),
     $redo : $('#redo'),
     
@@ -89,7 +92,8 @@ $(function() {
     drawing : false,
     save : false,
     paint : false,
-    trill : true
+    trill : true,
+    select: true
   };
   
   var action = {
@@ -515,6 +519,28 @@ $(function() {
     return bgCanvas.toDataURL();
   };
 
+  /* selecting */
+
+  var createSelectionEl = function(e) {
+    if (!DOM.dragSelectBox) {
+      DOM.$dragSelectBox = $('<div id="' + classes.dragSelectBox + '"></div>');      
+      DOM.$body.append(DOM.$dragSelectBox);
+    }
+    DOM.$dragSelectBox.css({
+      left: roundToNearestPixel(e.pageX),
+      top: roundToNearestPixel(e.pageY)
+    });
+  };
+
+  var drawSelection = function(e) {
+
+    console.log(roundToNearestPixel((e.pageX - this.offsetLeft) - rect.startX));
+
+    DOM.$dragSelectBox.css({
+      width: roundToNearestPixel((e.pageX - this.offsetLeft) - rect.startX),
+      height: roundToNearestPixel((e.pageY - this.offsetTop) - rect.startY)
+    });
+  };
   
   /* saving */
 
@@ -523,8 +549,8 @@ $(function() {
     return canRound ? Math.round(n / pixel.size) * pixel.size : n;
   };
 
-  var startSaveSelection = function(e) {
-    saveSelection = {
+  var startSelection = function(e) {
+    selectionRect = {
       startX : roundToNearestPixel(e.pageX),
       startY : roundToNearestPixel(e.pageY)
     };
@@ -532,18 +558,18 @@ $(function() {
   
   var generateSaveSelection = function(e) {
 
-    saveSelection.endX = roundToNearestPixel(e.pageX);
-    saveSelection.endY = roundToNearestPixel(e.pageY);
+    selectionRect.endX = roundToNearestPixel(e.pageX);
+    selectionRect.endY = roundToNearestPixel(e.pageY);
 
-    generateSelectionCanvas(saveSelection);
+    generatesaveSelectionCanvas(selectionRect);
     DOM.$buttonSaveSelection.click();
   };
   
-  var generateSelectionCanvas = function(coords) {
+  var generatesaveSelectionCanvas = function(coords) {
     
     // temporary canvas to save image
-    DOM.$body.append('<canvas id="' + classes.selectionCanvas + '"></canvas>');
-    var tempCanvas = $('#' + classes.selectionCanvas);
+    DOM.$body.append('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');
+    var tempCanvas = $('#' + classes.saveSelectionCanvas);
     var tempCtx = tempCanvas[0].getContext('2d');
 
     // set dimensions and draw based on selection
@@ -567,7 +593,7 @@ $(function() {
     tempCanvas.remove();
   };
 
-  var drawSelection = function(e) {
+  var drawSaveSelection = function(e) {
     rect.w = roundToNearestPixel((e.pageX - this.offsetLeft) - rect.startX);
     rect.h = roundToNearestPixel((e.pageY - this.offsetTop) - rect.startY);
     ctxOverlay.clearRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
@@ -746,7 +772,7 @@ $(function() {
       DOM.$canvas.removeClass(classes.dropperMode);
       DOM.$dropper.removeClass(classes.currentTool).removeAttr('style');
     }
-    else if ( !mode.save ) {
+    else if ( !mode.save && !mode.select ) {
     
       // reset history
       undoRedoHistory = undoRedoHistory.slice(0, historyPointer+1);
@@ -782,13 +808,23 @@ $(function() {
     else {
       // overlay stuff
       rect = {};
-      startSaveSelection(e);
-      rect.startX = roundToNearestPixel(e.pageX - this.offsetLeft);
+      startSelection(e);
+      rect.startX = roundToNearestPixel(e.pageX - this.offsetLeft); 
       rect.startY = roundToNearestPixel(e.pageY - this.offsetTop);
-      DOM.$overlay.on('mousemove', drawSelection);
-      
-      // touch
-      DOM.$overlay[0].addEventListener('touchmove', drawSelection, false);
+
+      if ( mode.save ) {      
+        DOM.$overlay.on('mousemove', drawSaveSelection);
+        
+        // touch
+        DOM.$overlay[0].addEventListener('touchmove', drawSaveSelection, false);
+      }
+
+      if ( mode.select ) {
+        createSelectionEl(e);
+
+        DOM.$body.on('mousemove', drawSelection);
+      }
+
     }
     
   };
@@ -872,6 +908,11 @@ $(function() {
       ctxOverlay.fillRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
       DOM.$overlay.show();
     }
+  });
+
+  // select section of canvas 
+  DOM.$select.click(function() {
+    mode.select = true;
   });
 
   // ensure elements are enabled before triggering a click event

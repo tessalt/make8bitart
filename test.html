@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<!--
+
+                                             ____
+   ___                                      .-~. /_"-._
+  `-._~-.                                  / /_ "~o\  :Y
+      \  \                                / : \~x.  ` ')
+       ]  Y                              /  |  Y< ~-.__j      -------------------------
+      /   !                        _.--~T : l  l<  /.-~      /                         \
+     /   /                 ____.--~ .   ` l /~\ \<|Y   -----\  JENN SCHIFFER MADE THIS |
+    /   /             .-~~"        /| .    ',-~\ \L|        \    WOWOWOWOWOWOWOWOW     /
+   /   /             /     .^   \ Y~Y \.^>/l_   "--'         \________________________/
+  /   Y           .-"(  .  l__  j_j l_/ /~_.-~    .
+ Y    l          /    \  )    ~~~." / `/"~ / \.__/l_
+ |     \     _.-"      ~-{__     l  :  l._Z~-.___.--~
+ |      ~---~           /   ~~"---\_  ' __[>
+ l  .                _.^   ___     _>-y~
+  \  \     .      .-~   .-~   ~>--"  /
+   \  ~---"            /     ./  _.-'
+    "-.,_____.,_  _.--~\     _.-~
+                ~~     (   _}  
+                        `. ~(
+                          )  \
+                         /,`--'~\--'
+
+-->
+
+<head>
+  <title>make 8-bit art!</title>
+  <link rel="stylesheet" href="build/make8bitart.min.css" />
+  <link rel="icon" href="assets/favicon.png" />
+  <style>
+  #dragSelectBox {
+    position: absolute;
+    border: 1px solid red;
+  }
+  </style>
+</head>
+
+<body id="do-what-you-want-what-you-want-with-my-html-body">
+
+
+
+<!-- 
+                                                          .--.__
+                                                      .~ (@)  ~~~---_
+                                                     {     `-_~,,,,,,)
+                                                     {    (_  ',       ---- haha nope
+                                                      ~    . = _',
+                                                       ~-   '.  =-'
+                                                         ~     :
+      .                                             _,.-~     ('');
+      '.                                         .-~        \  \ ;
+        ':-_                                _.--~            \  \;      _-=,.
+          ~-:-.__                       _.-~                 {  '---- _'-=,.
+             ~-._~--._             __.-~                     ~---------=,.`
+                 ~~-._~~-----~~~~~~       .+++~~~~~~~~-__   /
+                      ~-.,____           {   -     +   }  _/
+                              ~~-.______{_    _ -=\ / /_.~
+                                   :      ~--~    // /         ..-
+                                   :   / /      // /         ((
+                                   :  / /      {   `-------,. ))
+                                   :   /        ''=--------. }o
+                      .=._________,'  )                     ))
+                      )  _________ -''                     ~~
+                     / /  _ _
+                    (_.-.'O'-'.        HEADER INFO  -->
+                    
+  <div id="header" class="draggy" title="header">
+  
+    <div class="controls">
+      <img class="ui-dragger" src="assets/draggybits/dragger2.png" alt="drag">
+    </div>
+  
+    <h1>make 8-bit art!</h1>
+    
+    <div id="minimized-tools-list"></div>
+    
+  </div>
+  
+<!-- 
+                       _..--+~/@-~--.
+                   _-=~      (  .   '
+                _-~     _.--=.\ \'''' --- BOOTY HAD ME LIKE...
+              _~      _-       \ \_\
+             =      _=          '--'
+            '      =                             .
+           :      :       ____                   '=_. ___
+      ___  |      ;                            ____ '~--.~.
+           ;      ;                               _____  } |
+        ___=       \ ___ __     __..-...__           ___/__/__
+           :        =_     _.-~~          ~~--.__
+      _____ \         ~-+-~                   ___~=_______
+           ~@#~~ == ...______ __ ___ _--~~--_                  SOCIAL LINKS -->       
+  
+  <div id="what" class="draggy" title="what is this even?" data-title="what">
+  
+    <div class="controls">
+      <img class="ui-dragger" src="assets/draggybits/dragger2.png" alt="drag">
+      <img class="ui-hider" src="assets/draggybits/hider2.png" alt="minimize">
+    </div>
+
+    <h3>what is this even?</h3>
+
+    this is an <a href="http://github.com/jennschiffer/make8bitart" target="_blank">open source</a> drawing tool by <a href="http://twitter.com/jennschiffer" target="_blank">jennmoneydollars</a>!
+     
+    <h3>tell all your pals about it!</h3>
+  
+  </div>
+    
+  <!--
+                                 .       .
+                                / `.   .' \
+                        .---.  <    > <    >  .---.
+                        |    \  \ - ~ ~ - /  /    |
+                         ~-..-~             ~-..-~
+                     \~~~\.'                    `./~~~/
+                      \__/                        \__/
+                       /                  .-    .  \
+                _._ _.-    .-~ ~-.       /       }   \/~~~/
+            _.-'q  }~     /       }     {        ;    \__/
+ butts --- {'__,  /      (       /      {       /      `. ,~~|   .     .
+            `''''='~~-.__(      /_      |      /- _      `..-'   \\   //
+                        / \   =/  ~~--~~{    ./|    ~-.     `-..__\\_//_.-'
+                       {   \  +\         \  =\ (        ~ - . _ _ _..---~
+                       |  | {   }         \   \_\
+                      '---.o___,'       .o___,      TOOLBOX -->                 
+              
+  <div id="toolbox" class="draggy" title="canvas/brush tools" data-title="tools">
+
+    <div class="controls">
+      <img class="ui-dragger" src="assets/draggybits/dragger2.png" alt="drag">
+      <img class="ui-hider" src="assets/draggybits/hider2.png" alt="minimize">
+    </div>
+    
+    <div id="tools" class="inner">
+      <h3>canvas tools</h3>
+      
+      <div id="instruments">
+        <img class="current-tool" id="pencil" src="assets/pencil.png" alt="draw"  data-href="#draw" role="button" title="draw" />
+        <img id="paint" src="assets/paint.png" alt="paint"  data-href="#paint" role="button" title="paint/fill" />
+      </div>
+      
+      <p>
+        <input type="submit" id="select" title="select" value="select"/>
+        <input type="submit" id="undo" title="ctrl+z" value="undo" disabled="disabled" />
+        <input type="submit" id="redo" title="ctrl+y" value="redo" disabled="disabled" />
+      </p>
+  
+      <input type="submit" value="new canvas" id="new-canvas" /> 
+      <div class="tip"> ? <span class="tip-text">this will clear your canvas and create a new one with the background of whichever color is selected, including "erase" for a transparent one</span></div>
+    </div>
+    
+    <div id="size" class="inner">
+      <h3>brush size</h3>
+      <input id="pixel-size" class="pixel-size-input" type="number" min="1" max="100" step="1" value="15" />
+      <div class="tip"> ? <span class="tip-text">changing pixel size *won't* clear the whole page, but using different sized pixels makes it less "8-bit"ish. you do you, though. I'm not the 8-bit police.</span></div>
+      <input id="pixel-size-slider" class="pixel-size-input" type="range" min="1" max="100" step="1" value="15" />
+      <div id="pixel-size-demo" class="color-demo"> </div>
+    </div>
+  </div>
+
+  <!-- 
+                                     _..-=~=-._
+                                 _.-~'          ~.
+                     __..---~~~~~                 ~.
+                _.-~~                      _.._     ~.
+            _ -~_                         /    \      ;
+           ( ` '@)                       {      |      :
+           /                             |      |      :
+          /     /}         (  )          |      |     .-  --- farting on
+         /     //-=-~-_-_  |  |          \      ;    .'        the h8rs
+        /     //     | =._-|  }/ / / /_.==\     ; _.'   *
+       ( oo  //|     = )  ~| /.__..-='|    \    :'     **
+        ====||*|    / /    + )    \   |_.-~`\   :      |**
+           |*| *   / /    / /      \  |     ([ ])     /|||(
+       *    |*    /_/    / /       (  ]     `/ \'     /|||_
+      **(*   |   (((|   /_/      __/_/__    -| |--    _|_|__
+      *|\|             (((|      -----     __|_|__
+   _/(h8rs)|__            '''                 -----
+     _||_|__              SAVE BOX -->
+    
+  <div id="savebox" class="draggy" title="save your work" data-title="save">
+
+    <div class="controls">
+      <img class="ui-dragger" src="assets/draggybits/dragger2.png" alt="drag">
+      <img class="ui-hider" src="assets/draggybits/hider2.png" alt="minimize">
+    </div>
+    
+    <div id="save" class="inner">
+      <h3>save your art</h3> 
+      
+      <input type="submit" value="full page" id="save-full" /> 
+      <br />
+      <input type="submit" value="selection" id="save-selection" />
+      
+      <ul class="instructions">
+        <li>click and drag to select the area of the canvas you want to save.</li>    
+      </ul>
+    </div>
+    
+  </div>
+
+  <!-- 
+                               <\              _                
+                                \\          _/{                  
+                         _       \\       _-   -_                
+                       /{        / `\   _-     - -_              
+                     _~  =      ( @  \ -        -  -_            
+                   _- -   ~-_   \( =\ \           -  -_          
+                 _~  -       ~_ | 1 :\ \      _-~-_ -  -_        
+               _-   -          ~  |V: \ \  _-~     ~-_-  -_      
+            _-~   -            /  | :  \ \            ~-_- -_    
+         _-~    -   _.._      {   | : _-``               ~- _-_  
+      _-~   -__..--~    ~-_  {   : \:}    --- hi h8rs                       
+    =~__.--~~              ~-_\  :  /                            
+                               \ : /__                           
+                              //`Y'--\\                          
+                             <+       \\                         
+                              \\      WWW                       
+                              MMM        COLORBOX -->
+                              
+  <div id="colorbox" class="draggy" title="color tools" data-title="colors">
+
+    <div class="controls">
+      <img class="ui-dragger" src="assets/draggybits/dragger2.png" alt="drag">
+      <img class="ui-hider" src="assets/draggybits/hider2.png" alt="minimize">
+    </div>
+
+    <ul class="tabs">
+      <li class="default active" data-href="#default-palettes" role="button">default/history</li>
+      <li class="pickers" data-href="#pickers" role="button">color pickers</li>
+      <li class="custom" data-href="#custom-palettes" role="button">custom palettes</li>
+    </ul>
+    
+    <div id="default-palettes" class="inner palettes clearfix">
+      <h3>pick a color:</h3>
+      <ul class="clearfix">
+        <li><a class="button color primary red" title="red" data-color="rgba(255, 0, 0, 1)"> </a></li>
+        <li><a class="button color primary orange" title="orange" data-color="rgba(255, 165, 0, 1)"> </a></li>
+        <li><a class="button color primary yellow" title="yellow" data-color="rgba(255, 255, 0, 1)"> </a></li>
+        <li><a class="button color primary green" title="green" data-color="rgba(0, 128, 0, 1)"> </a></li>
+        <li><a class="button color primary blue" title="blue" data-color="rgba(0, 0, 255, 1)"> </a></li>
+        <li><a class="button color primary purple" title="purple" data-color="rgba(128, 0, 128, 1)"> </a></li>
+        <li><a class="button color primary black" title="black" data-color="rgba(0, 0, 0, 1)"> </a></li>
+        <li><a class="button color primary gray" title="gray" data-color="rgba(128, 128, 128, 1)"> </a></li>
+        <li><a class="button color primary white" title="white" data-color="rgba(255, 255, 255, 1)"> </a></li>
+        <li><a class="button color transparent" title="erase" data-color="rgba(0, 0, 0, 0)"> </a></li>
+      </ul>
+
+      <div id="color-history">
+        <h3 class="color-history-label">history:</h3>
+        <ul class="color-history-list clearfix"></ul>
+
+        <div id="color-history-tools">
+          <button class="clear">clear</button>
+          <!--<button class="export">export</button>-->
+        </div>
+      </div>
+      
+    </div>
+    
+    <div id="pickers">
+      <div id="hex-picker">
+        <h3>hex value:</h3>
+
+        #<input id="hex-color" type="text" value="000000" /> <img id="color-dropper" src="assets/dropper.png" alt="color dropper" data-href="#dropper" role="button" title="color dropper" />
+      </div>
+      
+      <div id="eight-bit-picker">
+        <h3 class="eightbit">click to pick:</h3>
+        <canvas id="eight-bit-colors" width="150" height="150"></canvas>
+        <div class="color-demo eightbit"></div>
+      </div>
+    </div>
+    
+    <div id="custom-palettes">
+      <div id="color-custom" class="palettes">
+        <h3 class="color-upload-label">custom:</h3>        
+        
+
+        <ul class="color-custom-list clearfix"></ul>
+        
+        <div id="color-custom-tools">
+          <p>Upload file in "name,hex" csv format, like in <a href="assets/example.csv">example.csv</a>!</p>
+
+          <input type="file" name="upload-palette" class="import" /> 
+          <button class="clear">clear</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="save-modal-container">
+    <div id="save-modal">
+      <img class="ui-hider" src="assets/draggybits/hider2.png" alt="close">
+
+      <h2>you saved your art!</h2>
+      <a href="#" target="_blank"><img id="finished-art" /></a>
+    
+      <p>Click or drag your art to your desktop to save, <br />or <input type="submit" value="upload to imgur.com" id="save-imgur" /> <a id="link-imgur"></a>!</p> 
+    </div>
+  </div>
+  
+<script src="js/libs/jquery-2.1.1.min.js"></script>
+<script src="js/libs/keymaster.js"></script>
+<script src="js/libs/draggybits.js"></script>
+<script src="js/app/make8bitart.js"></script>
+
+</html>
