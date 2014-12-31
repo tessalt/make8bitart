@@ -66,7 +66,7 @@ $(function() {
     $tips : $('.tip'),
     $saveInstruction : $('.instructions').slideUp(),
     
-    $select: $('#select'),
+    $select: $('.selectButton'),
 
     $undo : $('#undo'),
     $redo : $('#redo'),
@@ -94,7 +94,9 @@ $(function() {
     paint : false,
     trill : true,
     select: false,
-    selected: false
+    selected: false,
+    copy: false,
+    move: false
   };
   
   var action = {
@@ -553,6 +555,14 @@ $(function() {
     selectContent = ctx.getImageData(selectionRect.startX, selectionRect.startY, selectionRect.w, selectionRect.h);
     selectCtx.putImageData(selectContent, 0, 0);
 
+    if ( mode.move ) {
+      ctx.clearRect(selectionRect.startX, selectionRect.startY, selectionRect.w, selectionRect.h);
+    }
+
+    DOM.$body.on('mousemove', moveSelectionCanvas);
+
+    DOM.$selectBox.on('mousedown', dropSelection);
+
   };
 
   var moveSelectionCanvas = function(e) {
@@ -564,10 +574,13 @@ $(function() {
 
   var dropSelection = function(e) {
     DOM.$body.off('mousemove');
+
     mode.selected = false;
+    mode.copy = false;
+    mode.move = false;
     DOM.$selectBox.detach();
     
-    ctx.putImageData(selectContent, e.pageX - selectionRect.w, e.pageY - selectionRect.h);
+    ctx.putImageData(selectContent, roundToNearestPixel(e.pageX - selectionRect.w), roundToNearestPixel(e.pageY - selectionRect.h));
 
   };
   
@@ -943,9 +956,11 @@ $(function() {
   });
 
   // select section of canvas 
-  DOM.$select.click(function() {
+  DOM.$select.click(function(e) {
     mode.select = !mode.select;
+    var id = $(this).attr('id');
     if ( mode.select ) {
+      mode[id] = true;
       ctxOverlay.fillRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
       DOM.$overlay.show();      
     } else {
