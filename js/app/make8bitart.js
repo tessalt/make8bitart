@@ -525,10 +525,11 @@ $(function() {
   var generateSelection = function(e) {
     selectionRect.endX = roundToNearestPixel(e.pageX);
     selectionRect.endY = roundToNearestPixel(e.pageY);
-    generateSelectionCanvas(selectionRect);
   };
 
-  var generateSelectionCanvas = function(coords) {
+  var generateSelectionCanvas = function(e) {
+    DOM.$overlay.hide();
+    generateSelection(e);
 
     mode.select = false;
     mode.selected = true;
@@ -538,18 +539,18 @@ $(function() {
     DOM.$selectCanvas = DOM.$selectBox.find('canvas'),
         selectCtx = DOM.$selectCanvas[0].getContext('2d');
 
-    selectionRect.w = Math.abs(coords.endX - coords.startX);
-    selectionRect.h = Math.abs(coords.endY - coords.startY);
+    selectionRect.w = Math.abs(selectionRect.endX - selectionRect.startX);
+    selectionRect.h = Math.abs(selectionRect.endY - selectionRect.startY);
 
     DOM.$selectCanvas[0].width = selectionRect.w;
     DOM.$selectCanvas[0].height = selectionRect.h;
 
     DOM.$selectBox.css({
-      left: coords.startX,
-      top: coords.startY
+      left: selectionRect.startX,
+      top: selectionRect.startY
     });
 
-    selectContent = ctx.getImageData(coords.startX, coords.startY, selectionRect.w, selectionRect.h);
+    selectContent = ctx.getImageData(selectionRect.startX, selectionRect.startY, selectionRect.w, selectionRect.h);
     selectCtx.putImageData(selectContent, 0, 0);
 
   };
@@ -789,8 +790,6 @@ $(function() {
   
   var onMouseDown = function(e) {
     e.preventDefault();
-
-    console.log(mode);
             
     var origData = ctx.getImageData( e.pageX, e.pageY, 1, 1).data;
     var origRGB = getRGBColor(origData);
@@ -813,7 +812,11 @@ $(function() {
       }   
 
       else {
-        console.log('draw mode');
+
+        if ( mode.selected ) {
+          mode.selected = false;
+          DOM.$selectBox.detach();
+        }
         // draw mode
         mode.drawing = true;
       
@@ -868,7 +871,7 @@ $(function() {
         mode.save = false;
       }
       if ( mode.select ) {
-        generateSelection(e);
+        generateSelectionCanvas(e);
         mode.select = false;
       }
       rect = {};
