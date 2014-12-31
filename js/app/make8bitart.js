@@ -93,7 +93,7 @@ $(function() {
     save : false,
     paint : false,
     trill : true,
-    select: true
+    select: false
   };
   
   var action = {
@@ -521,25 +521,31 @@ $(function() {
 
   /* selecting */
 
-  var createSelectionEl = function(e) {
-    if (!DOM.dragSelectBox) {
-      DOM.$dragSelectBox = $('<div id="' + classes.dragSelectBox + '"></div>');      
-      DOM.$body.append(DOM.$dragSelectBox);
-    }
-    DOM.$dragSelectBox.css({
-      left: roundToNearestPixel(e.pageX),
-      top: roundToNearestPixel(e.pageY)
-    });
+  var generateSelection = function(e) {
+    selectionRect.endX = roundToNearestPixel(e.pageX);
+    selectionRect.endY = roundToNearestPixel(e.pageY);
+    generateSelectionCanvas(selectionRect);
   };
 
-  var drawSelection = function(e) {
+  var generateSelectionCanvas = function(coords) {
+    DOM.$body.append('<canvas id="' + classes.dragSelectBox + '"></canvas>');
+    var selectCanvas = $('#' + classes.dragSelectBox),
+        selectCtx = selectCanvas[0].getContext('2d');
 
-    console.log(roundToNearestPixel((e.pageX - this.offsetLeft) - rect.startX));
+    var w = Math.abs(coords.endX - coords.startX);
+    var h = Math.abs(coords.endY - coords.startY);
 
-    DOM.$dragSelectBox.css({
-      width: roundToNearestPixel((e.pageX - this.offsetLeft) - rect.startX),
-      height: roundToNearestPixel((e.pageY - this.offsetTop) - rect.startY)
+    selectCanvas[0].width = w;
+    selectCanvas[0].height = h;
+
+    selectCanvas.css({
+      left: coords.startX,
+      top: coords.startY
     });
+
+    var selectContent = ctx.getImageData(coords.startX, coords.startY, w, h);
+    selectCtx.putImageData(selectContent, 0, 0);
+
   };
   
   /* saving */
@@ -558,14 +564,13 @@ $(function() {
   
   var generateSaveSelection = function(e) {
 
-    selectionRect.endX = roundToNearestPixel(e.pageX);
-    selectionRect.endY = roundToNearestPixel(e.pageY);
+    generateSelection(e);
 
-    generatesaveSelectionCanvas(selectionRect);
+    generateSaveSelectionCanvas(selectionRect);
     DOM.$buttonSaveSelection.click();
   };
   
-  var generatesaveSelectionCanvas = function(coords) {
+  var generateSaveSelectionCanvas = function(coords) {
     
     // temporary canvas to save image
     DOM.$body.append('<canvas id="' + classes.saveSelectionCanvas + '"></canvas>');
@@ -783,6 +788,7 @@ $(function() {
         paint( e.pageX, e.pageY, pixel.color, origRGB );
       }
       else {
+        
         // draw mode
         mode.drawing = true;
       
@@ -812,25 +818,17 @@ $(function() {
       rect.startX = roundToNearestPixel(e.pageX - this.offsetLeft); 
       rect.startY = roundToNearestPixel(e.pageY - this.offsetTop);
 
-      if ( mode.save ) {      
-        DOM.$overlay.on('mousemove', drawSaveSelection);
-        
-        // touch
-        DOM.$overlay[0].addEventListener('touchmove', drawSaveSelection, false);
-      }
-
-      if ( mode.select ) {
-        createSelectionEl(e);
-
-        DOM.$body.on('mousemove', drawSelection);
-      }
+      DOM.$overlay.on('mousemove', drawSaveSelection);
+      
+      // touch
+      DOM.$overlay[0].addEventListener('touchmove', drawSaveSelection, false);
 
     }
     
   };
   
   var onMouseUp = function(e) {
-    if ( !mode.save ) {
+    if ( !mode.save && !mode.select ) {
       DOM.$canvas.off('mousemove');
       mode.drawing = false;
       
@@ -840,8 +838,14 @@ $(function() {
     else {
       DOM.$overlay.off('mousemove');
       ctxOverlay.clearRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
-      generateSaveSelection(e);
-      mode.save = false;
+      if ( mode.save ) {
+        generateSaveSelection(e);
+        mode.save = false;
+      }
+      if ( mode.select ) {
+        generateSelection(e);
+        mode.select = false;
+      }
       rect = {};
     }
   };
@@ -912,7 +916,14 @@ $(function() {
 
   // select section of canvas 
   DOM.$select.click(function() {
-    mode.select = true;
+    mode.select = !mode.select;
+    if ( mode.select ) {
+      ctxOverlay.fillRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
+      DOM.$overlay.show();      
+    } else {
+      ctxOverlay.clearRect(0,0,DOM.$overlay.width(),DOM.$overlay.height());
+      DOM.$overlay.hide();
+    }
   });
 
   // ensure elements are enabled before triggering a click event
